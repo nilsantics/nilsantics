@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mustard Seed</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="A Bible idle game. Pray, gather Faith, and read from Genesis to Revelation as a mustard seed grows into a tree.">
+<meta name="theme-color" content="#0a1230">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Alegreya+Sans:wght@400;500;700&family=Uncial+Antiqua&display=swap">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="app" id="app">
+
+  <section class="sanctuary" id="sanctuary" aria-label="Your mustard tree">
+    <button class="pray" id="pray" type="button" aria-describedby="pray-hint">
+      <canvas id="tree" aria-hidden="true"></canvas>
+      <span class="sr-only">Pray</span>
+    </button>
+
+    <div class="tally">
+      <p class="mark">Mustard Seed</p>
+      <p class="faith"><span class="faith-amount" id="faith-amount">0</span> <span class="faith-unit">Faith</span></p>
+      <p class="rate"><span id="faith-rate">0</span> per second</p>
+      <ul class="buffs" id="buffs"></ul>
+    </div>
+
+    <p class="pray-hint" id="pray-hint">Tap the tree to pray · <span id="click-power">+1</span> each</p>
+
+    <div class="floaters" id="floaters" aria-hidden="true"></div>
+    <button class="manna" id="manna" type="button" hidden aria-label="Gather the manna">
+      <span class="manna-wafer"></span>
+    </button>
+  </section>
+
+  <section class="ledger" aria-label="Your works, upgrades and scripture">
+    <div class="tabs" role="tablist" aria-label="Sections">
+      <button class="tab" role="tab" type="button" id="tab-works" aria-controls="panel-works" aria-selected="true">Works</button>
+      <button class="tab" role="tab" type="button" id="tab-upgrades" aria-controls="panel-upgrades" aria-selected="false" tabindex="-1">Upgrades <span class="badge" id="badge-upgrades" hidden></span></button>
+      <button class="tab" role="tab" type="button" id="tab-scripture" aria-controls="panel-scripture" aria-selected="false" tabindex="-1">Scripture <span class="badge" id="badge-scripture" hidden></span></button>
+      <button class="tab" role="tab" type="button" id="tab-jubilee" aria-controls="panel-jubilee" aria-selected="false" tabindex="-1">Jubilee <span class="badge" id="badge-jubilee" hidden></span></button>
+      <button class="tab" role="tab" type="button" id="tab-records" aria-controls="panel-records" aria-selected="false" tabindex="-1">Records</button>
+    </div>
+
+    <div class="panels" id="panels">
+
+      <div class="panel" role="tabpanel" id="panel-works" aria-labelledby="tab-works">
+        <div class="panel-head">
+          <blockquote class="epigraph"><p id="works-verse"></p><cite id="works-ref"></cite></blockquote>
+          <div class="amounts" role="radiogroup" aria-label="How many to buy">
+            <button type="button" class="amount" role="radio" aria-checked="true" data-amount="1">×1</button>
+            <button type="button" class="amount" role="radio" aria-checked="false" data-amount="10">×10</button>
+            <button type="button" class="amount" role="radio" aria-checked="false" data-amount="100">×100</button>
+            <button type="button" class="amount" role="radio" aria-checked="false" data-amount="max">Max</button>
+          </div>
+        </div>
+        <ol class="works" id="works"></ol>
+      </div>
+
+      <div class="panel" role="tabpanel" id="panel-upgrades" aria-labelledby="tab-upgrades" hidden>
+        <div class="panel-head row">
+          <p class="panel-note" id="upgrades-note">No upgrades yet.</p>
+          <button type="button" class="small-btn" id="buy-all" disabled>Buy all I can afford</button>
+        </div>
+        <ul class="upgrades" id="upgrades"></ul>
+        <details class="purchased" id="purchased" hidden>
+          <summary id="purchased-summary">Purchased</summary>
+          <ul class="purchased-list" id="purchased-list"></ul>
+        </details>
+      </div>
+
+      <div class="panel" role="tabpanel" id="panel-scripture" aria-labelledby="tab-scripture" hidden>
+        <div class="panel-head">
+          <p class="scripture-count"><span id="books-read">0</span> of 66 books read</p>
+          <div class="progress" aria-hidden="true"><span class="progress-fill" id="books-bar"></span></div>
+          <p class="panel-note" id="books-next"></p>
+          <p class="panel-note">Each book read adds 2% to all Faith, forever.</p>
+          <p class="tree-stage" id="tree-stage"></p>
+        </div>
+        <h2 class="testament">The Old Testament</h2>
+        <ol class="books" id="books-old"></ol>
+        <h2 class="testament">The New Testament</h2>
+        <ol class="books" id="books-new"></ol>
+      </div>
+
+      <div class="panel" role="tabpanel" id="panel-jubilee" aria-labelledby="tab-jubilee" hidden>
+        <blockquote class="epigraph"><p id="jubilee-verse"></p><cite id="jubilee-ref"></cite></blockquote>
+        <p class="prose">Proclaim a Jubilee to release everything built in this age: your Faith, works and upgrades. In return you receive Blessings. Each Blessing adds 2% to all Faith and every prayer, for good.</p>
+        <dl class="figures">
+          <div><dt>Blessings held</dt><dd id="jub-held">0</dd></div>
+          <div><dt>Waiting for you</dt><dd id="jub-pending">0</dd></div>
+          <div><dt>Blessing bonus now</dt><dd id="jub-now">×1</dd></div>
+          <div><dt>After the Jubilee</dt><dd id="jub-after">×1</dd></div>
+        </dl>
+        <p class="panel-note" id="jub-next"></p>
+        <div class="keeps">
+          <div><h3>Released</h3><p>Faith on hand, works, and their upgrades</p></div>
+          <div><h3>Kept</h3><p>Books read, Blessings, the Sabbath and manna upgrades, records</p></div>
+        </div>
+        <div class="confirm-row" id="jub-actions">
+          <button type="button" class="primary-btn" id="jub-start" disabled>Proclaim the Jubilee</button>
+        </div>
+        <div class="confirm-row" id="jub-confirm" hidden>
+          <p class="confirm-text" id="jub-confirm-text">Release this age for Blessings?</p>
+          <button type="button" class="primary-btn" id="jub-yes">Proclaim it</button>
+          <button type="button" class="small-btn" id="jub-no">Not yet</button>
+        </div>
+      </div>
+
+      <div class="panel" role="tabpanel" id="panel-records" aria-labelledby="tab-records" hidden>
+        <h2 class="panel-title">Records</h2>
+        <dl class="stats" id="stats"></dl>
+
+        <h2 class="panel-title">Saving</h2>
+        <p class="prose">Your game saves on this device every few seconds. To move it to another device, copy the save code and load it there.</p>
+        <div class="button-row">
+          <button type="button" class="small-btn" id="save-now">Save now</button>
+          <button type="button" class="small-btn" id="copy-save">Copy save code</button>
+        </div>
+        <label class="field-label" for="save-code">Save code</label>
+        <textarea id="save-code" class="save-code" rows="3" spellcheck="false" autocomplete="off" placeholder="Paste a save code here, then choose Load."></textarea>
+        <div class="button-row">
+          <button type="button" class="small-btn" id="load-save">Load</button>
+          <p class="field-msg" id="save-msg" role="status"></p>
+        </div>
+
+        <h2 class="panel-title">Start over</h2>
+        <div class="confirm-row" id="reset-actions">
+          <button type="button" class="danger-btn" id="reset-start">Erase all progress</button>
+        </div>
+        <div class="confirm-row" id="reset-confirm" hidden>
+          <p class="confirm-text">This erases everything, including books and Blessings. It cannot be undone.</p>
+          <button type="button" class="danger-btn" id="reset-yes">Erase everything</button>
+          <button type="button" class="small-btn" id="reset-no">Keep my game</button>
+        </div>
+
+        <p class="colophon">Scripture quotations are from the King James Version.</p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<ol class="toasts" id="toasts" aria-live="polite"></ol>
+
+<div class="modal" id="welcome" hidden>
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="welcome-title">
+    <h2 id="welcome-title">Welcome back</h2>
+    <p id="welcome-body"></p>
+    <blockquote class="epigraph small"><p>One day is with the Lord as a thousand years, and a thousand years as one day.</p><cite>2 Peter 3:8</cite></blockquote>
+    <button type="button" class="primary-btn" id="welcome-ok">Amen</button>
+  </div>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/ui.js"></script>
+</body>
+</html>
